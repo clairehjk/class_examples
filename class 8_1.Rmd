@@ -12,6 +12,8 @@ library(mosaicModel)
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
+#install.packages("evd")
+library(evd)
 require(broom)
 ```
 
@@ -41,7 +43,7 @@ mod_plot(boxOfficeModel, data=filmData)
 # To assess the success of our model, let's look at how well
 # it predicts Oscar success.  First we pull the predicted logit
 # scores out of our favoured model.
-oscarLogits = augment(boxOfficeModel, filmData)
+oscarLogits <- augment(boxOfficeModel, filmData)
 
 ggplot(data=oscarLogits, aes(x=BoxOffice, y=.fitted)) + geom_point()
 
@@ -55,31 +57,35 @@ binnedplot(oscarLogits$.fitted ,oscarLogits$.resid,
     xlab="Expected Values", ylab="Average residual", 
     main="Binned residual plot", 
     cex.pts=0.8, col.pts=1, col.int="gray")
-mod_plot(boxOfficeModel)
+#mod_plot(boxOfficeModel)
 
 # Now we can use R's handy ifelse command to set a new variable
 # "oscarPredictions" to 1 if the logit score is greater than 0,
 # and to 0 if the logit score is lower than 0.  Recall that a 
 # logit score of 0 corresponds to a probability of 0.5.
-oscarPredictions = ifelse(oscarLogits > 0,1,0)
+oscarPredictions <- ifelse(oscarLogits > 0,1,0)
 
 # Making a table of actual v. predicted Oscar success shows us
 # that our model gets 215 films right and 85 films wrong.
 # Better than guessing though!
-table(oscarPredictions,Oscar)
+table(oscarPredictions)
 
 
 
 # Now fit the full model, i.e., predicting a film's Oscar 
 # winning chances based on all five of the available 
 # predictor variables.
-fullModel = glm( Oscar ~ BoxOffice + Budget + Country + Critics + Length, data = filmData, family=binomial(link="logit"))
+fullModel <- glm( Oscar ~ BoxOffice + Budget + Country + Critics + Length, data = filmData, family=binomial(link="logit"))
 summary(fullModel)
 
 exp(fullModel$coefficients)
 
-mod_plot(fullModel)
-
+#mod_plot(fullModel)
+model <- augment(fullModel, filmData)
+binnedplot(model$.fitted ,model$.resid,
+    xlab="Expected Values11", ylab="Average residual", 
+    main="Binned residual plot", 
+    cex.pts=0.8, col.pts=1, col.int="gray")
 
 # Here's another dataset with a logistic model
 mod2 <- glm(married ~ age + sex * sector,
@@ -87,6 +93,8 @@ data = mosaicData::CPS85, family=binomial(link="logit"))
 
 # plot the model and interpret it, what do the visualizations
 # say about the relationships
+exp(fullModel$coefficients)
+exp(boxOfficeModel$coefficients)
 
 ```
 
@@ -98,13 +106,13 @@ data = mosaicData::CPS85, family=binomial(link="logit"))
 # To assess the success of our model, let's look at how well
 # it predicts Oscar success.  First we pull the predicted logit
 # scores out of our favoured model.
-oscarLogits = predict(fullModel)
+oscarLogits <- predict(fullModel)
 
 # Now we can use R's handy ifelse command to set a new variable
 # "oscarPredictions" to 1 if the logit score is greater than 0,
 # and to 0 if the logit score is lower than 0.  Recall that a 
 # logit score of 0 corresponds to a probability of 0.5.
-oscarPredictions = ifelse(oscarLogits > 0,1,0)
+oscarPredictions <- ifelse(oscarLogits > 0,1,0)
 
 # Making a table of actual v. predicted Oscar success shows us
 # that our model gets 215 films right and 85 films wrong.
